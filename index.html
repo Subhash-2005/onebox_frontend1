@@ -1,0 +1,1182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Onebox Email Aggregator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .header h1 .icon {
+            font-size: 1.2em;
+        }
+
+        .subtitle {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .accounts-status {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .account-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        .account-item {
+            background: rgba(255,255,255,0.2);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .controls {
+            padding: 25px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 300px;
+            padding: 12px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #219a52;
+            transform: translateY(-2px);
+        }
+
+        .btn-warning {
+            background: #f39c12;
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #e67e22;
+            transform: translateY(-2px);
+        }
+
+        .filters {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .filter-label {
+            font-size: 0.9em;
+            color: #6c757d;
+            font-weight: 600;
+        }
+
+        .filter-select {
+            padding: 10px 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            background: white;
+            min-width: 150px;
+            transition: all 0.3s ease;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .stats {
+            display: flex;
+            gap: 20px;
+            padding: 15px 25px;
+            background: #e8f4fc;
+            border-bottom: 1px solid #cfe2ff;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .email-list-container {
+            min-height: 600px;
+            position: relative;
+        }
+
+        .email-list {
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        .email-item {
+            padding: 20px 25px;
+            border-bottom: 1px solid #e9ecef;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .email-item:hover {
+            background: #f8f9fa;
+            transform: translateX(5px);
+        }
+
+        .email-item.unread {
+            background: #f0f8ff;
+            border-left: 4px solid #3498db;
+        }
+
+        .email-header {
+            display: flex;
+            justify-content: between;
+            align-items: flex-start;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .email-subject {
+            font-weight: 600;
+            font-size: 1.1em;
+            color: #2c3e50;
+            flex: 1;
+        }
+
+        .email-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 0.9em;
+            color: #6c757d;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+        }
+
+        .email-preview {
+            color: #495057;
+            line-height: 1.5;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .category {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .category-interested {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .category-not-interested {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .category-meeting-booked {
+            background: #cce7ff;
+            color: #004085;
+        }
+
+        .category-spam {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .category-out-of-office {
+            background: #e2e3e5;
+            color: #383d41;
+        }
+
+        .account-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 8px;
+            background: #e9ecef;
+            border-radius: 12px;
+            font-size: 0.75em;
+            color: #495057;
+        }
+
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+
+        .error {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            color: #dc3545;
+            text-align: center;
+        }
+
+        .error-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            padding: 25px;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .pagination-btn {
+            padding: 10px 20px;
+            border: 2px solid #3498db;
+            background: white;
+            color: #3498db;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .pagination-btn:hover:not(:disabled) {
+            background: #3498db;
+            color: white;
+        }
+
+        .pagination-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pagination-info {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .email-detail {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow: hidden;
+            z-index: 1000;
+            display: none;
+        }
+
+        .email-detail.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .email-detail-header {
+            background: #2c3e50;
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .email-detail-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5em;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .email-detail-body {
+            padding: 25px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .email-detail-subject {
+            font-size: 1.4em;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+
+        .email-detail-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .meta-item {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .meta-label {
+            font-size: 0.8em;
+            color: #6c757d;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .meta-value {
+            font-weight: 500;
+            color: #2c3e50;
+        }
+
+        .email-detail-content {
+            line-height: 1.6;
+            color: #495057;
+            white-space: pre-wrap;
+            margin-bottom: 25px;
+            padding: 15px;
+            background: #fff;
+            border-radius: 6px;
+            border: 1px solid #e9ecef;
+        }
+
+        #suggestedReply {
+            transition: all 0.3s ease;
+        }
+
+        #suggestedReply:empty {
+            display: none;
+        }
+
+        [data-action="generate-reply"]:disabled {
+            opacity: 0.7;
+            cursor: wait;
+        }
+
+        [data-action="copy-reply"] {
+            transition: all 0.3s ease;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+            z-index: 999;
+            display: none;
+        }
+
+        .overlay.active {
+            display: block;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .search-box {
+                flex-direction: column;
+            }
+            
+            .search-input {
+                min-width: auto;
+            }
+            
+            .filters {
+                flex-direction: column;
+            }
+            
+            .filter-select {
+                min-width: auto;
+            }
+            
+            .email-detail {
+                width: 95%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>
+                <span class="icon">📧</span>
+                Onebox Email Aggregator
+            </h1>
+            <div class="subtitle">All your emails in one place</div>
+            <div class="accounts-status" id="accountsStatus">
+                Loading account status...
+            </div>
+        </div>
+
+        <div class="controls">
+            <div class="search-box">
+                <input type="text" id="searchInput" class="search-input" placeholder="Search emails by subject, sender, or content..." onkeypress="handleKeyPress(event)">
+                <button onclick="searchEmails()" class="btn btn-primary">
+                    <span>🔍</span> Search
+                </button>
+                <button onclick="loadEmails()" class="btn btn-success">
+                    <span>🔄</span> Refresh
+                </button>
+                <button onclick="testAPI()" class="btn btn-warning">
+                    <span>⚡</span> Test API
+                </button>
+            </div>
+
+            <div class="filters">
+                <div class="filter-group">
+                    <div class="filter-label">Folder</div>
+                    <select id="folderFilter" class="filter-select" onchange="loadEmails()">
+                        <option value="">All Folders</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <div class="filter-label">Category</div>
+                    <select id="categoryFilter" class="filter-select" onchange="loadEmails()">
+                        <option value="">All Categories</option>
+                        <option value="Interested">Interested</option>
+                        <option value="Not Interested">Not Interested</option>
+                        <option value="Meeting Booked">Meeting Booked</option>
+                        <option value="Spam">Spam</option>
+                        <option value="Out of Office">Out of Office</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <div class="filter-label">Account</div>
+                    <select id="accountFilter" class="filter-select" onchange="loadEmails()">
+                        <option value="">All Accounts</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <div class="filter-label">Date</div>
+                    <select id="dateFilter" class="filter-select" onchange="loadEmails()">
+                        <option value="">All Time</option>
+                        <option value="today">Today</option>
+                        <option value="week">This Week</option>
+                        <option value="month">This Month</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats" id="stats">
+            <div class="stat-item">
+                <span>📊</span>
+                <span id="totalEmails">Loading...</span>
+            </div>
+            <div class="stat-item">
+                <span>🏷️</span>
+                <span id="categoryStats">Categories: -</span>
+            </div>
+            <div class="stat-item">
+                <span>👤</span>
+                <span id="accountStats">Accounts: -</span>
+            </div>
+        </div>
+
+        <div class="email-list-container">
+            <div id="emailList" class="email-list">
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <div>Loading your emails...</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="pagination" id="pagination">
+            <!-- Pagination will be inserted here -->
+        </div>
+    </div>
+
+    <!-- Email Detail Modal -->
+    <div class="overlay" id="overlay"></div>
+    <div class="email-detail" id="emailDetail">
+        <div class="email-detail-header">
+            <h3>Email Details</h3>
+            <button class="email-detail-close" onclick="closeEmailDetail()">×</button>
+        </div>
+        <div class="email-detail-body" id="emailDetailBody">
+            <!-- Email details will be inserted here -->
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:4000/api';
+        let currentPage = 1;
+        const pageSize = 20;
+        let allEmails = [];
+        let categoryStats = {};
+        let accountStats = {};
+
+        // Load emails on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadAccountStatus();
+            loadEmails();
+            loadFilters();
+        });
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                searchEmails();
+            }
+        }
+
+        async function loadAccountStatus() {
+            try {
+                const response = await fetch(`${API_BASE}/accounts/status`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const accountsHtml = data.data.accounts.map(account => 
+                        `<div class="account-item">
+                            ${account.connected ? '✅' : '❌'} 
+                            ${account.account}
+                        </div>`
+                    ).join('');
+                    
+                    document.getElementById('accountsStatus').innerHTML = `
+                        <div style="text-align: center; margin-bottom: 10px;">
+                            <strong>Connected Accounts: ${data.data.connectedAccounts}/${data.data.totalAccounts}</strong>
+                        </div>
+                        <div class="account-list">
+                            ${accountsHtml}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                document.getElementById('accountsStatus').innerHTML = 
+                    '<div style="color: #ff6b6b; text-align: center;">Failed to load account status</div>';
+            }
+        }
+
+        async function loadEmails() {
+            try {
+                showLoading();
+                await loadAccountStatus();
+                
+                const folder = document.getElementById('folderFilter').value;
+                const category = document.getElementById('categoryFilter').value;
+                const account = document.getElementById('accountFilter').value;
+                const search = document.getElementById('searchInput').value;
+                const dateFilter = document.getElementById('dateFilter').value;
+                
+                let url = `${API_BASE}/emails?limit=${pageSize}&offset=${(currentPage - 1) * pageSize}`;
+                
+                if (folder) url += `&folder=${encodeURIComponent(folder)}`;
+                if (category) url += `&category=${encodeURIComponent(category)}`;
+                if (account) url += `&account=${encodeURIComponent(account)}`;
+                if (search) url += `&query=${encodeURIComponent(search)}`;
+                if (dateFilter) {
+                    const date = getDateFilter(dateFilter);
+                    if (date) url += `&fromDate=${date.toISOString()}`;
+                }
+
+                console.log('Fetching URL:', url);
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+
+                if (data.success) {
+                    allEmails = data.data;
+                    displayEmails(allEmails);
+                    updatePagination(data.total);
+                    updateStats(data.total);
+                    calculateStats(allEmails);
+                } else {
+                    showError('Failed to load emails: ' + (data.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error loading emails:', error);
+                showError('Failed to load emails: ' + error.message);
+            }
+        }
+
+        function getDateFilter(filter) {
+            const now = new Date();
+            switch (filter) {
+                case 'today':
+                    return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                case 'week':
+                    return new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                case 'month':
+                    return new Date(now.getFullYear(), now.getMonth(), 1);
+                default:
+                    return null;
+            }
+        }
+
+        async function loadFilters() {
+            try {
+                const response = await fetch(`${API_BASE}/filters`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+
+                if (data.success) {
+                    // Load folders
+                    const folderSelect = document.getElementById('folderFilter');
+                    folderSelect.innerHTML = '<option value="">All Folders</option>';
+                    data.data.folders.forEach(folder => {
+                        const option = document.createElement('option');
+                        option.value = folder;
+                        option.textContent = folder;
+                        folderSelect.appendChild(option);
+                    });
+                    
+                    // Load accounts
+                    const accountSelect = document.getElementById('accountFilter');
+                    accountSelect.innerHTML = '<option value="">All Accounts</option>';
+                    data.data.accounts.forEach(account => {
+                        const option = document.createElement('option');
+                        option.value = account;
+                        option.textContent = account;
+                        accountSelect.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading filters:', error);
+            }
+        }
+
+        function displayEmails(emails) {
+            const emailList = document.getElementById('emailList');
+            
+            if (emails.length === 0) {
+                emailList.innerHTML = `
+                    <div class="loading">
+                        <div style="font-size: 3em; margin-bottom: 15px;">📭</div>
+                        <div>No emails found</div>
+                        <div style="margin-top: 10px; font-size: 0.9em; color: #6c757d;">
+                            Try adjusting your search or filters
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            emailList.innerHTML = emails.map(email => {
+                // Clean the preview text
+                const preview = cleanPreview(email.textBody || email.body || 'No content available');
+                
+                return `
+                    <div class="email-item" onclick="viewEmailDetail('${email.id}')">
+                        <div class="email-header">
+                            <div class="email-subject">
+                                ${escapeHtml(email.subject || 'No Subject')}
+                                <span class="category category-${(email.category || 'Not Interested').toLowerCase().replace(' ', '-')}">
+                                    ${email.category || 'Not Interested'}
+                                </span>
+                            </div>
+                            <div class="account-badge">
+                                📧 ${email.account || 'Unknown Account'}
+                            </div>
+                        </div>
+                        <div class="email-meta">
+                            <div><strong>From:</strong> ${escapeHtml(email.from || 'Unknown')}</div>
+                            <div><strong>Date:</strong> ${new Date(email.date).toLocaleString()}</div>
+                            <div><strong>Folder:</strong> ${email.folder || 'INBOX'}</div>
+                        </div>
+                        <div class="email-preview">
+                            ${preview}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function cleanPreview(content) {
+            if (!content) return 'No content available';
+            
+            // Clean HTML entities and encoded content
+            let clean = content
+                .replace(/=3D/g, '=')
+                .replace(/=20/g, ' ')
+                .replace(/=\r\n/g, '')
+                .replace(/\r\n/g, ' ')
+                .replace(/\s+/g, ' ')
+                .substring(0, 200);
+            
+            return escapeHtml(clean) + '...';
+        }
+
+        function updatePagination(total) {
+            const pagination = document.getElementById('pagination');
+            const totalPages = Math.ceil(total / pageSize);
+            
+            if (totalPages <= 1) {
+                pagination.innerHTML = '';
+                return;
+            }
+
+            let html = `
+                <button class="pagination-btn" onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
+                    ← Previous
+                </button>
+                <div class="pagination-info">
+                    Page ${currentPage} of ${totalPages}
+                </div>
+                <button class="pagination-btn" onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>
+                    Next →
+                </button>
+            `;
+            
+            pagination.innerHTML = html;
+        }
+
+        function updateStats(total) {
+            document.getElementById('totalEmails').textContent = `Total Emails: ${total}`;
+        }
+
+        function calculateStats(emails) {
+            // Calculate category statistics
+            categoryStats = {};
+            accountStats = {};
+            
+            emails.forEach(email => {
+                const category = email.category || 'Not Interested';
+                const account = email.account || 'Unknown';
+                
+                categoryStats[category] = (categoryStats[category] || 0) + 1;
+                accountStats[account] = (accountStats[account] || 0) + 1;
+            });
+            
+            // Update category stats display
+            const categoryText = Object.entries(categoryStats)
+                .map(([cat, count]) => `${cat}: ${count}`)
+                .join(', ');
+            document.getElementById('categoryStats').textContent = `Categories: ${categoryText}`;
+            
+            // Update account stats display
+            const accountText = Object.entries(accountStats)
+                .map(([acc, count]) => `${acc}: ${count}`)
+                .join(', ');
+            document.getElementById('accountStats').textContent = `Accounts: ${accountText}`;
+        }
+
+        function changePage(page) {
+            currentPage = page;
+            loadEmails();
+            // Scroll to top
+            document.getElementById('emailList').scrollTop = 0;
+        }
+
+        function searchEmails() {
+            currentPage = 1;
+            loadEmails();
+        }
+
+        function showLoading() {
+            document.getElementById('emailList').innerHTML = `
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <div>Loading your emails...</div>
+                </div>
+            `;
+        }
+
+        function showError(message) {
+            document.getElementById('emailList').innerHTML = `
+                <div class="error">
+                    <div class="error-icon">❌</div>
+                    <div style="font-size: 1.2em; margin-bottom: 10px;">Oops! Something went wrong</div>
+                    <div>${message}</div>
+                    <button onclick="loadEmails()" class="btn btn-primary" style="margin-top: 20px;">
+                        Try Again
+                    </button>
+                </div>
+            `;
+        }
+
+        async function testAPI() {
+            try {
+                showLoading();
+                const endpoints = [
+                    '/health',
+                    '/emails?limit=1',
+                    '/filters',
+                    '/accounts/status'
+                ];
+
+                const results = await Promise.all(
+                    endpoints.map(async (endpoint) => {
+                        try {
+                            const response = await fetch(`${API_BASE}${endpoint}`);
+                            return {
+                                endpoint,
+                                status: response.status,
+                                ok: response.ok,
+                                data: response.ok ? await response.json() : null
+                            };
+                        } catch (error) {
+                            return {
+                                endpoint,
+                                status: 0,
+                                ok: false,
+                                error: error.message
+                            };
+                        }
+                    })
+                );
+
+                const message = results.map(r => 
+                    `${r.endpoint}: ${r.ok ? '✅ OK' : '❌ Failed'} (${r.status})`
+                ).join('\n');
+
+                alert('API Test Results:\n\n' + message);
+
+            } catch (error) {
+                alert('API Test Failed: ' + error.message);
+            } finally {
+                loadEmails();
+            }
+        }
+
+        async function viewEmailDetail(emailId) {
+            try {
+                const response = await fetch(`${API_BASE}/emails/${emailId}`);
+                if (!response.ok) throw new Error('Failed to fetch email details');
+                
+                const data = await response.json();
+                if (!data.success) throw new Error(data.error);
+
+                const email = data.data;
+                const detailBody = document.getElementById('emailDetailBody');
+                
+                // Clean the email content for display
+                const cleanContent = cleanEmailContent(email.textBody || email.body || 'No content available');
+                
+                detailBody.innerHTML = `
+                    <div class="email-detail-subject">
+                        ${escapeHtml(email.subject || 'No Subject')}
+                        <span class="category category-${(email.category || 'Not Interested').toLowerCase().replace(' ', '-')}">
+                            ${email.category || 'Not Interested'}
+                        </span>
+                    </div>
+                    
+                    <div class="email-detail-meta">
+                        <div class="meta-item">
+                            <div class="meta-label">From</div>
+                            <div class="meta-value">${escapeHtml(email.from || 'Unknown')}</div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">To</div>
+                            <div class="meta-value">${Array.isArray(email.to) ? email.to.join(', ') : email.to || 'Unknown'}</div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">Date</div>
+                            <div class="meta-value">${new Date(email.date).toLocaleString()}</div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">Folder</div>
+                            <div class="meta-value">${email.folder || 'INBOX'}</div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">Account</div>
+                            <div class="meta-value">${email.account || 'Unknown'}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="email-detail-content">
+                        <pre style="white-space: pre-wrap; font-family: inherit;">${cleanContent}</pre>
+                    </div>
+                    
+                    <!-- AI Suggested Reply Section -->
+                    <div style="margin-top: 25px; padding: 20px; background: #f8f9fa; border-radius: 8px;">
+                        <h4 style="margin-bottom: 15px; color: #2c3e50;">💡 AI Suggested Reply</h4>
+                        <div id="suggestedReply" style="background: white; padding: 15px; border-radius: 6px; border: 1px solid #e9ecef; margin-bottom: 15px; white-space: pre-wrap; font-family: monospace;">
+                            No reply generated yet. Click the button below to generate a suggested reply.
+                        </div>
+                        <button onclick="generateSuggestedReply('${email.id}')" class="btn btn-primary" style="margin-right: 10px;">
+                            <span>✨</span> Generate Reply
+                        </button>
+                        <button onclick="copyToClipboard('suggestedReply')" class="btn btn-success">
+                            <span>📋</span> Copy Reply
+                        </button>
+                    </div>
+                `;
+
+                // Show modal
+                document.getElementById('emailDetail').classList.add('active');
+                document.getElementById('overlay').classList.add('active');
+                
+            } catch (error) {
+                alert('Failed to load email details: ' + error.message);
+            }
+        }
+
+        function closeEmailDetail() {
+            document.getElementById('emailDetail').classList.remove('active');
+            document.getElementById('overlay').classList.remove('active');
+        }
+
+        // Close modal when clicking overlay
+        document.getElementById('overlay').addEventListener('click', closeEmailDetail);
+
+        function escapeHtml(unsafe) {
+            if (!unsafe) return '';
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;")
+                .replace(/\n/g, '<br>');
+        }
+
+        // Auto-refresh every 30 seconds
+        setInterval(() => {
+            if (!document.getElementById('emailDetail').classList.contains('active')) {
+                loadAccountStatus();
+            }
+        }, 30000);
+
+        // Add this after the existing script tag content
+        // filepath: c:\Users\subha\reachinbox\onebox-email-aggregator\backend\frontend-test.html
+        async function generateSuggestedReply(emailId) {
+            try {
+                const replyButton = document.querySelector('button[onclick*="generateSuggestedReply"]');
+                const copyButton = document.querySelector('button[onclick*="copyToClipboard"]');
+                
+                // Safely disable buttons
+                if (replyButton) replyButton.disabled = true;
+                if (copyButton) copyButton.disabled = true;
+                
+                // Update button text
+                if (replyButton) {
+                    replyButton.innerHTML = '<span>⏳</span> Generating...';
+                }
+
+                const response = await fetch(`${API_BASE}/emails/${emailId}/suggest-reply`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('suggestedReply').textContent = data.data.suggestedReply;
+                    
+                    // Show success message
+                    if (replyButton) {
+                        replyButton.innerHTML = '<span>✅</span> Reply Generated';
+                    }
+                } else {
+                    document.getElementById('suggestedReply').textContent = 
+                        `Error: ${data.error || 'Failed to generate reply'}`;
+                    
+                    // Reset button on error
+                    if (replyButton) {
+                        replyButton.innerHTML = '<span>✨</span> Generate Reply';
+                        replyButton.disabled = false;
+                    }
+                }
+                
+                // Re-enable copy button
+                if (copyButton) {
+                    copyButton.disabled = false;
+                }
+                
+            } catch (error) {
+                console.error('Error generating suggested reply:', error);
+                document.getElementById('suggestedReply').textContent = 
+                    `Error: ${error.message}`;
+                
+                // Reset buttons on error
+                const replyButton = document.querySelector('button[onclick*="generateSuggestedReply"]');
+                const copyButton = document.querySelector('button[onclick*="copyToClipboard"]');
+                
+                if (replyButton) {
+                    replyButton.innerHTML = '<span>✨</span> Generate Reply';
+                    replyButton.disabled = false;
+                }
+                if (copyButton) {
+                    copyButton.disabled = false;
+                }
+            }
+        }
+
+        function copyToClipboard(elementId) {
+            try {
+                const text = document.getElementById(elementId).textContent;
+                navigator.clipboard.writeText(text).then(() => {
+                    alert('Reply copied to clipboard!');
+                }).catch(err => {
+                    console.error('Failed to copy: ', err);
+                    alert('Failed to copy to clipboard');
+                });
+            } catch (error) {
+                console.error('Copy error:', error);
+                alert('Error copying to clipboard');
+            }
+        }
+
+        // Enhanced email content cleaning
+        function cleanEmailContent(content) {
+            if (!content) return 'No content available';
+            
+            try {
+                // Clean HTML entities and encoded content
+                return content
+                    .replace(/=3D/g, '=')
+                    .replace(/=20/g, ' ')
+                    .replace(/=\r\n/g, '')
+                    .replace(/\r\n/g, '\n')
+                    .replace(/&nbsp;/g, ' ')
+                    .replace(/&amp;/g, '&')
+                    .replace(/&lt;/g, '<')
+                    .replace(/&gt;/g, '>')
+                    .replace(/&quot;/g, '"')
+                    .replace(/&#39;/g, "'")
+                    .replace(/&#(\d+);/g, (match, dec) => String.fromCharCode(parseInt(dec, 10)))
+                    .replace(/\s+/g, ' ')
+                    .trim();
+            } catch (error) {
+                console.error('Error cleaning email content:', error);
+                return content;
+            }
+        }
+    </script>
+</body>
+</html>
